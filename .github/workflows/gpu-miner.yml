@@ -1,0 +1,49 @@
+name: GPU Miner Build
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "src/bin/irium-miner-gpu.rs"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/gpu-miner.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "src/bin/irium-miner-gpu.rs"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/gpu-miner.yml"
+
+jobs:
+  build:
+    name: Build irium-miner-gpu
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install OpenCL headers and ICD loader
+        run: sudo apt-get update && sudo apt-get install -y ocl-icd-opencl-dev
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-gpu-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-gpu-
+
+      - name: Build GPU miner (release)
+        run: cargo build --release --features gpu --bin irium-miner-gpu
+
+      - name: cargo test --no-run (all targets)
+        run: cargo test --no-run
