@@ -47,3 +47,10 @@ jobs:
 
       - name: cargo test --no-run (all targets)
         run: cargo test --no-run
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: irium-miner-gpu-linux-x86_64
+          path: target/release/irium-miner-gpu
+          retention-days: 30
